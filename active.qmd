@@ -54,7 +54,7 @@ active <- players %>%
   relocate(Rank, .before = Player) %>%
   relocate(`Birth Year`, .before = Country) %>%
   select(-dob, -last_tournament) %>%
-  slice(1:25)
+  dplyr::slice(1:25)
 
 active_25 <- active %>% select(Player) %>% pull()
 
@@ -117,7 +117,7 @@ players %>%
   relocate(Rank, .before = Name) %>%
   relocate(`Birth Year`, .before = Country) %>%
   select(-dob, -Titles, -last_tournament) %>%
-  slice(1:25) %>% 
+  dplyr::slice(1:25) %>% 
   flextable() %>%
   align(align = "center", part = "all") %>%
   width(j = 11, width = 1.3) %>%
