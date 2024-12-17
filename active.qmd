@@ -53,7 +53,7 @@ active <- players %>%
     `Birth Year` = year(dob)) %>%
   relocate(Rank, .before = Player) %>%
   relocate(`Birth Year`, .before = Country) %>%
-  select(-dob, -last_tournament) %>% view()
+  select(-dob, -last_tournament) %>%
   slice(1:25)
 
 active_25 <- active %>% select(Player) %>% pull()
