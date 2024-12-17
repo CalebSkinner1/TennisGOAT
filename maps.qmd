@@ -1,0 +1,135 @@
+---
+title: "Birthplace"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  comment = "#", fig.height = 3, 
+  cache = FALSE, collapse = TRUE,
+  error = TRUE, echo = FALSE,
+  message = FALSE,
+  warning = FALSE,
+  fig.topcaption=TRUE)
+```
+
+```{r}
+library("tidyverse")
+library("janitor")
+library("here")
+library("plotly")
+library("tidygeocoder")
+
+rankings_100 <- read_csv(here("data/atp_rankings_top100"))
+
+# world map
+world_map <- map_data("world") %>% 
+  filter(! long > 180)
+```
+
+This page displays the birthplace of each player in the ATP top 100 in each decade.
+
+```{r 1973, fig.align="center", fig.height = 5, fig.width = 8}
+# 1973
+rankings1973 <- rankings_100 %>% filter(year(rank_date) == 1973)
+
+world_map %>%
+  ggplot() +
+  geom_map(map = world_map, aes(x = long, y = lat, map_id = region), color = "darkgreen", fill = "tan") +
+  coord_map("moll") +
+  geom_jitter(data = rankings1973,
+              aes(birth_long, birth_lat), width = 1, height = 1, size = 1.5) +
+  scale_y_continuous(breaks = c(-60, -30, 0, 30, 60)) +
+  scale_x_continuous(breaks = c(-135, -90, -45, 0, 45, 90, 135), labels = c("", "", "", "", "", "", "")) +
+  labs(x = "Longitude", y = "Latitude", title = "1973 ATP Top 100")
+```
+
+```{r 1980, fig.align="center", fig.height = 5, fig.width = 8}
+# 1980
+rankings1980 <- rankings_100 %>% filter(year(rank_date) == 1980)
+
+world_map %>%
+  ggplot() +
+  geom_map(map = world_map, aes(x = long, y = lat, map_id = region), color = "darkgreen", fill = "tan") +
+  coord_map("moll") +
+  geom_jitter(data = rankings1980,
+              aes(birth_long, birth_lat), width = 1, height = 1, size = 1.5) +
+  scale_y_continuous(breaks = c(-60, -30, 0, 30, 60)) +
+  scale_x_continuous(breaks = c(-135, -90, -45, 0, 45, 90, 135), labels = c("", "", "", "", "", "", "")) +
+  labs(x = "Longitude", y = "Latitude", title = "1980 ATP Top 100")
+```
+
+```{r 1990, fig.align="center", fig.height = 5, fig.width = 8}
+# 1990
+rankings1990 <- rankings_100 %>% filter(year(rank_date) == 1990)
+
+world_map %>%
+  ggplot() +
+  geom_map(map = world_map, aes(x = long, y = lat, map_id = region), color = "darkgreen", fill = "tan") +
+  coord_map("moll") +
+  geom_jitter(data = rankings1990,
+              aes(birth_long, birth_lat), width = 1, height = 1, size = 1.5) +
+  scale_y_continuous(breaks = c(-60, -30, 0, 30, 60)) +
+  scale_x_continuous(breaks = c(-135, -90, -45, 0, 45, 90, 135), labels = c("", "", "", "", "", "", "")) +
+  labs(x = "Longitude", y = "Latitude", title = "1990 ATP Top 100")
+```
+
+```{r 2000, fig.align="center", fig.height = 5, fig.width = 8}
+# 2000
+rankings2000 <- rankings_100 %>% filter(year(rank_date) == 2000)
+
+world_map %>%
+  ggplot() +
+  geom_map(map = world_map, aes(x = long, y = lat, map_id = region), color = "darkgreen", fill = "tan") +
+  coord_map("moll") +
+  geom_jitter(data = rankings2000,
+              aes(birth_long, birth_lat), width = 1, height = 1, size = 1.5) +
+  scale_y_continuous(breaks = c(-60, -30, 0, 30, 60)) +
+  scale_x_continuous(breaks = c(-135, -90, -45, 0, 45, 90, 135), labels = c("", "", "", "", "", "", "")) +
+  labs(x = "Longitude", y = "Latitude", title = "2000 ATP Top 100")
+```
+
+```{r 2010, fig.align="center", fig.height = 5, fig.width = 8}
+# 2010
+rankings2010 <- rankings_100 %>% filter(year(rank_date) == 2010)
+
+world_map %>%
+  ggplot() +
+  geom_map(map = world_map, aes(x = long, y = lat, map_id = region), color = "darkgreen", fill = "tan") +
+  coord_map("moll") +
+  geom_jitter(data = rankings2010,
+              aes(birth_long, birth_lat), width = 1, height = 1, size = 1.5) +
+  scale_y_continuous(breaks = c(-60, -30, 0, 30, 60)) +
+  scale_x_continuous(breaks = c(-135, -90, -45, 0, 45, 90, 135), labels = c("", "", "", "", "", "", "")) +
+  labs(x = "Longitude", y = "Latitude", title = "2010 ATP Top 100")
+```
+
+```{r 2020, fig.align="center", fig.height = 5, fig.width = 8}
+# 2020
+rankings2020 <- rankings_100 %>% filter(year(rank_date) == 2020)
+
+world_map %>%
+  ggplot() +
+  geom_map(map = world_map, aes(x = long, y = lat, map_id = region), color = "darkgreen", fill = "tan") +
+  coord_map("moll") +
+  geom_jitter(data = rankings2020,
+              aes(birth_long, birth_lat), width = 1, height = 1, size = 1.5) +
+  scale_y_continuous(breaks = c(-60, -30, 0, 30, 60)) +
+  scale_x_continuous(breaks = c(-135, -90, -45, 0, 45, 90, 135), labels = c("", "", "", "", "", "", "")) +
+  labs(x = "Longitude", y = "Latitude", title = "2020 ATP Top 100")
+```
+
+```{r 2024, fig.align="center", fig.height = 5, fig.width = 8}
+# 2024
+rankings2024 <- rankings_100 %>% filter(year(rank_date) == 2024)
+
+world_map %>%
+  ggplot() +
+  geom_map(map = world_map, aes(x = long, y = lat, map_id = region), color = "darkgreen", fill = "tan") +
+  coord_map("moll") +
+  geom_jitter(data = rankings2024,
+              aes(birth_long, birth_lat), width = 1, height = 1, size = 1.5) +
+  scale_y_continuous(breaks = c(-60, -30, 0, 30, 60)) +
+  scale_x_continuous(breaks = c(-135, -90, -45, 0, 45, 90, 135), labels = c("", "", "", "", "", "", "")) +
+  labs(x = "Longitude", y = "Latitude", title = "2024 ATP Top 100")
+```
+

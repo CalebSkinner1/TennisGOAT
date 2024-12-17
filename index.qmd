@@ -1,0 +1,122 @@
+---
+title: "Tennis GOAT"
+---
+
+<!-- Change: -->
+<!-- 1. Point system to reflect win probability -->
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  comment = "#", fig.height = 3, 
+  cache = FALSE, collapse = TRUE,
+  error = TRUE, echo = FALSE,
+  message = FALSE,
+  warning = FALSE)
+```
+
+```{r load, include = FALSE}
+library("tidyverse"); theme_set(theme_minimal())
+library("here")
+library("flextable")
+library("tidymodels")
+
+set_flextable_defaults(
+  font.size = 10, theme_fun = theme_apa,
+  padding = 3,
+  background.color = "#EFEFEF",
+  text.align = "center")
+
+players_results0 <- read_csv(here("data/player_results.csv"))
+```
+
+This website displays various rankings and timelines concerning men's professional tennis. It is intended to provide interesting insights and answer some of eclectic curiosities. Some pages of the site compare the success of the top men's players and countries at various tournaments. Other pages display player age or birth location trends.
+
+Men's Professional Tennis has been governed by the Association of Tennis Professionals (ATP) since 1972. The ATP ranks the players and organizes most of the tournaments. The four Grand Slams (Australian Open, French Open, Wimbledon, and US Open) are the most prestigious and popular tournaments. For better or for worse, the careers of the top tennis players are judged by their results at these Grand Slams.
+
+**Career Scoring System**
+
+In particular, I utilize a scoring system to measure the success of professional male tennis players in Grand Slam Tournaments in the Open Era (from 1968 onward). In this scoring system, players earn points for defeating players and advancing far in one of the four Grand Slam Tournaments each year. Players earn "victory points" in victories corresponding to their opponent's official ranking.
+
+At first, a reward that is linearly proportional to the opponent's rank seems natural. For example, players could earn 100 points for beating the world number 1, 99 points for defeating the world number 2, etc. But, in reality, players' skill is not linear across the world rankings. @fig-win-rate demonstrates that the win rate over the players' ranking is parabolic. I estimated the relationship of match win rate *y* and world ranking *r* with the line $\hat{y}(r) = \beta_0 + \beta_1r + \beta_2\sqrt{r}$. This crude estimation helps to value victories relative to the expected difficulty of the match.
+
+```{r, include= FALSE}
+win_rate_data <- players_results0 %>%
+  filter(between(rank, 1, 100)) %>%
+  group_by(rank) %>%
+  summarize(
+    wins = sum(result == "winner"),
+    losses = sum(result == "loser")) %>%
+  mutate(
+    win_rate = wins/(wins + losses))
+
+lm_spec <- linear_reg() %>%
+  set_mode("regression") %>%
+  set_engine("lm")
+
+wr_rec <- recipe(win_rate ~ rank, data = win_rate_data) %>%
+  step_mutate(rank2 = sqrt(rank))
+
+wr_wf <- workflow() %>%
+  add_model(lm_spec) %>%
+  add_recipe(wr_rec)
+
+wr_fit <- wr_wf %>% fit(win_rate_data)
+
+win_rate_data_update <- win_rate_data %>%
+  mutate(
+    rank2 = sqrt(rank),
+    fitted_values = wr_fit$fit$fit$fit$fitted.values,
+    win_points = (fitted_values - min(fitted_values))*99/(max(fitted_values) - min(fitted_values)) + 1,
+    lose_points = -.5*rank)
+```
+
+```{r}
+#| label: fig-win-rate
+#| fig-cap: Win Rate by World Rank
+win_rate_data_update %>%
+  ggplot() +
+  geom_point(aes(x = rank, y = win_rate), color = "indianred3") +
+  geom_line(aes(x = rank, y = fitted_values), color = "cadetblue4") +
+  labs(x = "ATP Ranking", y = "Win Rate") +
+  scale_y_continuous(labels = scales::label_percent())
+```
+
+If victorious, players earn points proportional to the expected win rate $\hat{y}(r)$ associated with their opponent's ranking.
+
+$$points = \frac{99[\hat{y}(r) - n]}{m - n} + 1$$
+
+where $n = \hat{y}(100) = 0.358$ and $m = \hat{y}(1) = 0.885$. After simplifying, $points = 52.119\hat{y}(r) - 18.673$.
+
+Players lose victory points at a rate proportional to their opponent's ranking for each loss. This equation is much simpler: $points = -.5r$.
+
+```{r victory points}
+win_rate_data_update %>%
+  mutate(lose_points = -lose_points) %>%
+  pivot_longer(cols = c(win_points, lose_points), names_to = "result", values_to = "points") %>%
+  ggplot() +
+  geom_line(aes(x = rank, y = points, color = result)) +
+  labs(x = "ATP Ranking", y = "Victory Points") +
+  scale_color_manual(labels = c("Loss", "Win"), values = c("indianred3", "cadetblue3")) +
+  theme(legend.title = element_blank())
+```
+
+Moreover, players earn bonus points for advancing far in tournaments.
+
+```{r bonus points}
+tibble("Round" = c("Quarterfinal", "Semifinal", "Final", "Champion"),
+       "Points" = c("10", "30", "60", "100")) %>%
+  flextable() %>%
+  width(j = c(2), width = 1.2) %>%
+  width(j = c(1), width = 1.4) %>%
+  set_caption("Bonus Points")
+```
+
+**Rankings**
+
+The ATP released its first international tennis ranking on August 23, 1973. From 1973 onward, the ATP released updated rankings at several points in the season. Until the early 1980s, however, the ranking updates came at irregular intervals. Thus, at many Grand Slam tournaments in the 1970s, players' rankings had not been updated in several months. To make matters worse, in the 1970s, it was common for the ATP's rankings to only include the top 50 players. This makes comparison with more recent years difficult. For this reason, I have turned to Ultimate Tennis Statistics' ELO ratings for Grand Slam matches in the late 1960s and 1970s. If a player is not included in the official ATP ranking, then the algorithm uses the players' ELO ranking.
+
+The match and rank data is courtesy of [Jeff Sackmann's Github](https://github.com/JeffSackmann/tennis_atp) and [ultimate tennis statistics](https://www.ultimatetennisstatistics.com). The data is updated through the 2024 Australian Open. Thus, results from the 2024 French Open, 2024 Wimbledon, and 2024 US Open are not included. This significantly impacts the rankings of players like Carlos Alcaraz and Jannik Sinner.
+
+This website has been edited, produced, and published by Caleb A. Skinner in R Quarto via GitPages.
+
+

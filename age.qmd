@@ -1,0 +1,117 @@
+---
+title: "Age"
+---
+
+This page ranks the top tennis player born in each year. It also displays the average age of each tennis player in the ATP top 100.
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  comment = "#", fig.height = 3, 
+  cache = FALSE, collapse = TRUE,
+  error = TRUE, echo = FALSE,
+  message = FALSE,
+  warning = FALSE)
+```
+
+```{r load, include = FALSE}
+library("tidyverse"); theme_set(theme_minimal())
+library("here")
+library("flextable")
+
+matches <- read_csv(here("data/gs_matches.csv"))
+players <- read_csv(here("data/gs_players.csv"))
+
+set_flextable_defaults(
+  font.size = 10, theme_fun = theme_zebra,
+  padding = 3,
+  background.color = "#EFEFEF",
+  text.align = "center")
+```
+
+
+```{r table 1}
+#| tbl-cap: Best Player by Year of Birth
+players %>%
+  group_by(name, dob, ioc) %>%
+  # group_by(name) %>%
+  summarize(
+    `Total Points` = sum(points) + sum(bonus),
+    `Victory Points` = sum(points),
+    `Bonus Points` = sum(bonus),
+    Victories = sum(points > 0),
+    Defeats = sum(points < 0),
+    `Win Percent` = scales::percent(Victories/(Victories + Defeats), accuracy = .01)) %>%
+  ungroup() %>%
+  rename(
+    Country = ioc,
+    Name = name) %>%
+  arrange(desc(`Total Points`)) %>%
+  mutate(
+    Rank = row_number(),
+    `Birth Year` = year(dob)) %>%
+  relocate(Rank, .before = Name) %>%
+  relocate(`Birth Year`, .before = Country) %>%
+  select(-dob) %>%
+  group_by(`Birth Year`) %>%
+  mutate(rank_year = row_number()) %>%
+  filter(rank_year == 1) %>%
+  arrange(`Birth Year`) %>%
+  filter(`Birth Year` > 1933) %>%
+  select(-rank_year) %>%
+  flextable() %>%
+  align(align = "center", part = "all") %>%
+  width(j = 10, width = 1.3) %>%
+  width(j = 2, width = 2.2) %>%
+  width(j = 4, width = 1.6) %>%
+  width(j = c(1,8:9), width = .7) %>%
+  colformat_double(j = c(5,7,8,9), digits = 0) %>%
+  colformat_double(j = 3,
+    big.mark = "", digits = 0, na_str = "N/A")
+```
+
+
+```{r}
+#| fig-cap: Mean Age of Top 50 Players
+
+path_to_file <- here("data")
+files_rankings <- fs::dir_ls(path = path_to_file, glob = "*atp_ranking_*csv")
+
+players_info <- read_csv(here("data/atp_players.csv")) %>%
+  mutate(player = str_c(name_first, " ", name_last)) %>%
+  select(-contains("name"), -wikidata_id)
+
+rankings <- read_csv(files_rankings, id = "path") %>%
+  rename(player_id = player) %>%
+  mutate(date = ymd(ranking_date)) %>%
+  select(-path, -points, -ranking_date) %>%
+  left_join(players_info, by = join_by(player_id)) %>%
+  arrange(date, rank)
+
+last_issue <- rankings %>%
+  select(date) %>%
+  distinct() %>%
+  mutate(year = year(date)) %>%
+  group_by(year) %>%
+  summarize(date = max(date)) %>%
+  select(date) %>% pull()
+
+rankings %>% filter(date %in% last_issue, rank < 51) %>%
+  relocate(player, .before = player_id) %>%
+  rename(rank_date = date) %>%
+  relocate(rank_date, .before = rank) %>%
+  mutate(
+    dob = ymd(dob),
+    year = year(rank_date),
+    age = time_length(rank_date - dob, "years")) %>%
+  group_by(year) %>%
+  summarize(
+    average_age = mean(age)) %>%
+  ggplot() +
+  geom_line(aes(x = year, y = average_age), color = "cadetblue4") +
+  labs(x = "Year", y = "Age")
+
+
+
+```
+
+

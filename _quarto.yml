@@ -1,0 +1,31 @@
+project:
+  type: website
+  output-dir: docs
+
+website:
+  title: "Tennis GOAT"
+  navbar:
+    left:
+      - href: index.qmd
+        text: Home
+      - rank.qmd
+      - active.qmd
+      - timeline.qmd
+      - australian_open.qmd
+      - french_open.qmd
+      - wimbledon.qmd
+      - us_open.qmd
+      - tournaments.qmd
+      - matchups.qmd
+      - age.qmd
+      - country.qmd
+      - maps.qmd
+
+format:
+  html:
+    theme: sandstone
+    css: styles.css
+    toc: true
+
+editor: source
+

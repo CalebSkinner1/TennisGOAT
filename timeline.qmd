@@ -1,0 +1,185 @@
+---
+title: "Timeline"
+---
+
+This page shows the progression of the top players over time.
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  comment = "#", fig.height = 3, 
+  cache = FALSE, collapse = TRUE,
+  error = TRUE, echo = FALSE,
+  message = FALSE,
+  warning = FALSE,
+  fig.topcaption=TRUE)
+```
+
+```{r load, include = FALSE}
+library("tidyverse"); theme_set(theme_minimal())
+library("here")
+library("flextable")
+library("plotly")
+library("magrittr")
+library("data.table")
+library("scales")
+library("gt")
+
+matches <- read_csv(here("data/gs_matches.csv"))
+players <- read_csv(here("data/gs_players.csv"))
+
+set_flextable_defaults(
+  font.size = 10, theme_fun = theme_apa,
+  padding = 3,
+  background.color = "#FFFFFF",
+  text.align = "center")
+```
+
+```{r, fig.height = 7, fig.width = 10}
+#| fig-cap: Top 25 Players over Time
+players_sum <- players %>%
+  group_by(name, dob, ioc, height, hand) %>%
+  # group_by(name) %>%
+  summarize(
+    total_points = sum(points) + sum(bonus),
+    victory_points = sum(points),
+    bonus_points = sum(bonus),
+    victories = sum(points > 0),
+    defeats = sum(points < 0),
+    win_perc = victories/(victories + defeats)) %>%
+  rename(country = ioc) %>%
+  arrange(desc(total_points))
+
+top10 <- players_sum %>% ungroup() %>% slice(1:10) %>% select(name) %>% pull()
+top20 <- players_sum %>% ungroup() %>% slice(1:20) %>% select(name) %>% pull()
+top25 <- players_sum %>% ungroup() %>% slice(1:25) %>% select(name) %>% pull()
+top30 <- players_sum %>% ungroup() %>% slice(1:30) %>% select(name) %>% pull()
+top50 <- players_sum %>% ungroup() %>% slice(1:50) %>% select(name) %>% pull()
+
+# top players over time
+p <- players %>%
+  group_by(name) %>%
+  mutate(
+    `Career Points` = cumsum(points + bonus)) %>%
+  filter(name %in% top25) %>%
+  rename(
+    Country = ioc,
+    Date = date,
+    Player = name) %>%
+  ungroup() %>%
+  ggplot(aes(x = Date, y = `Career Points`, color = Player, group = Country)) +
+  geom_line() +
+  scale_x_date(expand = c(0, 1000)) +
+  theme(legend.position = "none")
+
+ggplotly(p)
+```
+
+Scroll to see each player's results at individual tournaments.
+
+```{r}
+#| tbl-cap: Player Timelines
+titles3 <- players %>% group_by(name) %>% summarize(titles = sum(result == "winner" & round == "F")) %>%
+  filter(titles > 2) %>% arrange(desc(titles)) %>% select(name) %>% pull()
+
+# colourer <- col_numeric(
+#   palette = c("#950606", "darkgreen"),
+#   domain = c(-720, 720))
+
+players %>%
+  filter(name %in% titles3) %>%
+  group_by(name) %>%
+  mutate(
+    start = min(date),
+    Year = year(date)) %>%
+  group_by(name, Year, tourney_name, tourney_id) %>%
+  mutate(
+    round = case_when(
+      round == "R128" ~ 1,
+      round == "R64" ~ 2,
+      round == "R32" ~ 3,
+      round == "R16" ~ 4,
+      round == "QF" ~ 5,
+      round == "SF" ~ 6,
+      round == "F" & result == "loser" ~ 7,
+      round == "F"  & result == "winner" ~ 8,
+      .default = NA)) %>%
+  summarize(
+    round = max(round),
+    start = min(start)) %>%
+  ungroup() %>%
+  mutate(
+    round = case_when(
+      round == "1" ~ "1st",
+      round == "2" ~ "2nd",
+      round == "3" ~ "3rd",
+      round == "4" ~ "4th",
+      round == "5" ~ "QF",
+      round == "6" ~ "SF",
+      round == "7" ~ "F",
+      round == "8" ~ "W",
+      .default = NA),
+    Year = str_extract(tourney_id, "[0-9]{1,4}")
+    ) %>%
+  select(-tourney_id) %>%
+  arrange(start, name, tourney_name) %>%
+  select(-start) %>%
+  pivot_wider(names_from = Year, values_from = round, values_fill = NA) %>%
+  rename(
+    Player = name,
+    Tournament = tourney_name) %>%
+  mutate(
+    Tournament = recode(Tournament, "Roland Garros" = "French", "Australian Open" = "Australian")) %>%
+  unnest() %>%
+  mutate(
+    Player2 = Player,
+    Player3 = Player,
+    Player4 = Player,
+    Player5 = Player,
+    Player6 = Player,
+    `1977` = case_when(
+      Player == "Ken Rosewall" & Tournament == "Australian" ~ "SF/QF",
+      .default = `1977`),
+    across(`1968`:`2024`, ~factor(., levels = c("W", "F", "SF", "SF/QF", "QF", "4th", "3rd", "2nd", "1st", "")))) %>%
+  relocate(`1990`, .before = `1991`) %>% 
+  relocate(`1998`, .before = `1999`) %>% 
+  relocate(`2002`, .before = `2003`) %>%
+  relocate(`2007`, .before = `2008`) %>%
+  relocate(Player2, .before = `1980`) %>% 
+  relocate(Player3, .before = `1990`) %>% 
+  relocate(Player4, .before = `2000`) %>% 
+  relocate(Player5, .before = `2010`) %>% 
+  relocate(Player6, .before = `2020`) %>%
+  distinct() %>%
+  gt() %>%
+  cols_align(align = "center") %>%
+  sub_missing(
+    columns = everything(),
+    rows = everything(),
+    missing_text = " ") %>%
+  cols_width(
+    Player ~ px(200),
+    Player2 ~ px(200),
+    Player3 ~ px(200),
+    Player4 ~ px(200),
+    Player5 ~ px(200),
+    Player6 ~ px(200),
+    Tournament ~ px(100),
+    everything() ~ px(50)) %>%
+  cols_label(
+    Player2 = "Player",
+    Player3 = "Player",
+    Player4 = "Player",
+    Player5 = "Player",
+    Player6 = "Player") %>%
+  data_color(
+    palette = c("white", "lightblue", "cadetblue2", "blue", "navy", "tan", "yellow", "yellow", "hotpink2", "forestgreen"),
+    columns = num_range(prefix = "", range = 968:2024),
+    method = "factor",
+    levels = c(" ", "1st", "2nd", "3rd", "4th", "QF", "SF/QF", "SF", "F", "W"),
+    apply_to = "fill",
+    ordered = TRUE) %>%
+  tab_style_body(
+    fn = function(x) is.na(x),
+    style = cell_fill(color = "white"))
+```
+

@@ -1,0 +1,115 @@
+---
+title: "Tournaments"
+---
+
+This page describes the most impressive individual tournaments and years in the Open Era.
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  comment = "#", fig.height = 3, 
+  cache = FALSE, collapse = TRUE,
+  error = TRUE, echo = FALSE,
+  message = FALSE,
+  warning = FALSE)
+```
+
+```{r load, include = FALSE}
+library("tidyverse"); theme_set(theme_minimal())
+library("here")
+library("flextable")
+
+matches <- read_csv(here("data/gs_matches.csv"))
+players <- read_csv(here("data/gs_players.csv"))
+
+set_flextable_defaults(
+  font.size = 10, theme_fun = theme_zebra,
+  padding = 3,
+  background.color = "#EFEFEF",
+  text.align = "center")
+```
+
+```{r top individual tournament}
+#| tbl-cap: Top Individual Tournament
+players %>%
+  group_by(name, dob, ioc, tourney_name, tourney_id) %>%
+  summarize(
+    `Total Points` = sum(points) + sum(bonus)) %>%
+  ungroup() %>%
+  arrange(desc(`Total Points`)) %>%
+  slice(1:25) %>%
+  left_join((players %>% filter(round == "F") %>% select(name, tourney_id, opp_name)), by = join_by(tourney_id, name)) %>%
+  rename("Final" = opp_name) %>% 
+  left_join((players %>% filter(round == "SF") %>% select(name, tourney_id, opp_name)), by = join_by(tourney_id, name)) %>%
+  rename("Semifinal" = opp_name) %>%
+  left_join((players %>% filter(round == "QF") %>% select(name, tourney_id, opp_name)), by = join_by(tourney_id, name)) %>%
+  rename("Quarterfinal" = opp_name) %>%
+  left_join((players %>% filter(round == "R16") %>% select(name, tourney_id, opp_name)), by = join_by(tourney_id, name)) %>%
+  rename("Round of 16" = opp_name) %>%
+  left_join((players %>% filter(round == "R32") %>% select(name, tourney_id, opp_name)), by = join_by(tourney_id, name)) %>%
+  rename("Round of 32" = opp_name) %>%
+  left_join((players %>% filter(round == "R64") %>% select(name, tourney_id, opp_name)), by = join_by(tourney_id, name)) %>%
+  rename("Round of 64" = opp_name) %>%
+  left_join((players %>% filter(round == "R128") %>% select(name, tourney_id, opp_name)), by = join_by(tourney_id, name)) %>%
+  rename("Round of 128" = opp_name) %>%
+  rename(
+    Country = ioc,
+    Name = name,
+    Tournament = tourney_name) %>%
+  mutate(
+    Rank = row_number(),
+    `Birth Year` = year(dob),
+    Year = str_extract(tourney_id, "^.{4}")) %>%
+  relocate(Rank, .before = Name) %>%
+  relocate(`Birth Year`, .before = Country) %>%
+  relocate(Year, .after = Tournament) %>%
+  relocate(`Total Points`, .before = Final) %>%
+  select(-dob, -tourney_id) %>%
+  flextable() %>%
+  align(align = "center", part = "all") %>%
+  colformat_double(j = 3,
+    big.mark = "", digits = 0, na_str = "N/A")
+```
+
+```{r top year}
+#| tbl-cap: Top Year
+players %>%
+  mutate(
+    Year = str_extract(tourney_id, "^.{4}")) %>%
+  group_by(name, dob, ioc, Year) %>%
+  summarize(
+    `Total Points` = sum(points) + sum(bonus),
+    `Australian Open` = sum(tourney_name == "Australian Open") + sum(tourney_name == "Australian Open" & result == "winner" & round == "F"),
+    `French Open` = sum(tourney_name == "Roland Garros") + sum(tourney_name == "Roland Garros" & result == "winner" & round == "F"),
+    `Wimbledon` = sum(tourney_name == "Wimbledon") + sum(tourney_name == "Wimbledon" & result == "winner" & round == "F"),
+    `US Open` = sum(tourney_name == "US Open") + sum(tourney_name == "US Open" & result == "winner" & round == "F")) %>%
+  ungroup() %>%
+  arrange(desc(`Total Points`)) %>%
+  slice(1:25) %>%
+  rename(
+    Country = ioc,
+    Name = name) %>%
+  mutate(
+    Rank = row_number(),
+    `Birth Year` = year(dob),
+    across(`Australian Open`:`US Open`,
+           ~ case_when(
+             .x == "8" ~ "Champion",
+             .x == "7" ~ "Finalist",
+             .x == "6" ~ "Semifinal",
+             .x == "5" ~ "Quarters",
+             .x == "4" ~ "R16",
+             .x == "3" ~ "R32",
+             .x == "2" ~ "R64",
+             .x == "2" ~ "R128",
+             .default = ""))) %>%
+  relocate(Rank, .before = Name) %>%
+  relocate(`Birth Year`, .before = Country) %>%
+  select(-dob) %>% 
+  flextable() %>%
+  align(align = "center", part = "all") %>%
+  width(j = 2, width = 2.2) %>%
+  width(j = 4, width = 1.6) %>%
+  colformat_double(j = 3,
+    big.mark = "", digits = 0, na_str = "N/A")
+```
+

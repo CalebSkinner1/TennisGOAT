@@ -1,0 +1,103 @@
+---
+title: "Matchups"
+---
+
+This page orders and displays the most common matchups by players in Grand Slam Tournaments in the Open Era. 
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  comment = "#", fig.height = 3, 
+  cache = FALSE, collapse = TRUE,
+  error = TRUE, echo = FALSE,
+  message = FALSE,
+  warning = FALSE)
+```
+
+```{r load, include = FALSE}
+library("tidyverse"); theme_set(theme_minimal())
+library("here")
+library("flextable")
+
+matches <- read_csv(here("data/gs_matches.csv"))
+players <- read_csv(here("data/gs_players.csv"))
+
+set_flextable_defaults(
+  font.size = 10, theme_fun = theme_zebra,
+  padding = 3,
+  background.color = "#EFEFEF",
+  text.align = "center")
+```
+
+```{r matchups}
+#| tbl-cap: Most Common Matchups
+players %>%
+  filter(score != "W/O") %>%
+  group_by(name, opp_name) %>%
+  summarize(
+    Matchups = n(),
+    Wins = sum(result == "winner"),
+    Losses = sum(result == "loser"),
+    `First Matchup` = year(min(date)),
+    `Last Matchup` = year(max(date))) %>%
+  ungroup() %>%
+  mutate(
+    Wins = if_else(name > opp_name, Wins + .01, Wins),
+    remove = if_else(Wins > Losses, "keep", "remove")) %>%
+  filter(remove == "keep") %>%
+  select(-remove) %>%
+  arrange(desc(Matchups)) %>%
+  filter(Matchups > 5) %>%
+  mutate(
+    Wins = round(Wins, 0),
+    Rank = rank(-Matchups, ties.method = "min")) %>%
+  rename(
+    `Player 1` = name,
+    `Player 2` = opp_name) %>%
+  relocate(Rank, .before = `Player 1`) %>%
+  flextable() %>%
+  align(align = "center", part = "all") %>%
+  width(j = c(2,3), 1.8) %>%
+  width(j = c(7,8), 1.1) %>%
+  width(j = 1, .6) %>%
+  colformat_double(j = c(7,8),
+                   big.mark = "", digits = 0, na_str = "N/A")
+```
+
+```{r matchups in finals}
+#| tbl-cap: Most Matchups in Finals
+players %>%
+  filter(score != "W/O", round == "F") %>%
+  group_by(name, opp_name) %>%
+  summarize(
+    Matchups = n(),
+    Wins = sum(result == "winner"),
+    Losses = sum(result == "loser"),
+    `First Matchup` = year(min(date)),
+    `Last Matchup` = year(max(date))) %>%
+  ungroup() %>%
+  mutate(
+    Wins = if_else(name > opp_name, Wins + .01, Wins),
+    remove = if_else(Wins > Losses, "keep", "remove")) %>%
+  filter(remove == "keep") %>%
+  select(-remove) %>%
+  arrange(desc(Matchups)) %>%
+  filter(Matchups > 2) %>%
+  mutate(
+    Wins = round(Wins, 0),
+    Rank = rank(-Matchups, ties.method = "min")) %>%
+  rename(
+    `Player 1` = name,
+    `Player 2` = opp_name) %>%
+  relocate(Rank, .before = `Player 1`) %>%
+  flextable() %>%
+  align(align = "center", part = "all") %>%
+  width(j = c(2,3), 1.8) %>%
+  width(j = c(7,8), 1.1) %>%
+  width(j = 1, .6) %>%
+  colformat_double(j = c(7,8),
+                   big.mark = "", digits = 0, na_str = "N/A")
+```
+
+
+
+
