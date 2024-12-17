@@ -6,6 +6,4 @@
 *.Rproj
 /.Rproj.user/26A054E6
 /.Rproj.user/shared
-
 /.quarto/
-/docs
