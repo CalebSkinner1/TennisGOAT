@@ -2,7 +2,7 @@
 title: "US Open"
 ---
 
-Rankings, timeline, and frequent matchups at the US Open. The US Open is a hard court tournament held in August in Flushing Meadows New York.
+Rankings, timeline, and frequent matchups at the US Open. The US Open is a hard court tournament held in August in Flushing Meadows, New York.
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(
