@@ -28,7 +28,6 @@ set_flextable_defaults(
   text.align = "center")
 ```
 
-
 ```{r table 1}
 #| tbl-cap: Best Player by Year of Birth
 players %>%
@@ -64,7 +63,7 @@ players %>%
   width(j = 2, width = 2.2) %>%
   width(j = 4, width = 1.6) %>%
   width(j = c(1,8:9), width = .7) %>%
-  colformat_double(j = c(5,7,8,9), digits = 0) %>%
+  colformat_double(j = c(5:9), digits = 0) %>%
   colformat_double(j = 3,
     big.mark = "", digits = 0, na_str = "N/A")
 ```
