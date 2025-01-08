@@ -43,7 +43,7 @@ active <- players %>%
     Defeats = sum(points < 0),
     `Win Percent` = scales::percent(Victories/(Victories + Defeats), accuracy = .01)) %>%
   ungroup() %>%
-  filter(last_tournament > ymd(20230101), name != "Andy Murray") %>%
+  filter(last_tournament > ymd(20230101), name != "Andy Murray", name != "Rafael Nadal") %>%
   rename(
     Country = ioc,
     Player = name) %>%

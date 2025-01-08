@@ -21,7 +21,7 @@ pre_matches <- read_csv(files_matches, id = "path") %>% select(contains("tourney
   relocate(date, .after = tourney_name) %>%
   relocate(tourney_id, .after = score)
 
-# load player info
+# load player info from Sackmann
 
 players_info <- read_csv(here("data/atp_players.csv")) %>%
   mutate(player = str_c(name_first, " ", name_last)) %>%
@@ -397,9 +397,7 @@ players_results <- players_results0 %>%
 # write csvs
 
 # write_csv(matches, here("data/gs_matches.csv"))
-# 
+
 # write_csv(players_results, here("data/gs_players.csv"))
-
-
 
 
