@@ -106,7 +106,7 @@ players %>%
     last_tournament = max(date),
     `Win Percent` = scales::percent(Victories/(Victories + Defeats), accuracy = .01)) %>%
   ungroup() %>%
-  filter(last_tournament > ymd(20230101), name != "Andy Murray", Titles == 0) %>%
+  filter(last_tournament > ymd(20240101), Titles == 0) %>%
   rename(
     Country = ioc,
     Name = name) %>%
