@@ -115,7 +115,7 @@ tibble("Round" = c("Quarterfinal", "Semifinal", "Final", "Champion"),
 
 The ATP released its first international tennis ranking on August 23, 1973. From 1973 onward, the ATP released updated rankings at several points in the season. Until the early 1980s, however, the ranking updates came at irregular intervals. Thus, at many Grand Slam tournaments in the 1970s, players' rankings had not been updated in several months. To make matters worse, in the 1970s, it was common for the ATP's rankings to only include the top 50 players. This makes comparison with more recent years difficult. For this reason, I have turned to Ultimate Tennis Statistics' ELO ratings for Grand Slam matches in the late 1960s and 1970s. If a player is not included in the official ATP ranking, then the algorithm uses the players' ELO ranking.
 
-The match and rank data is courtesy of [Jeff Sackmann's Github](https://github.com/JeffSackmann/tennis_atp) and [ultimate tennis statistics](https://www.ultimatetennisstatistics.com). The data is updated through the 2024 Australian Open. Thus, results from the 2024 French Open, 2024 Wimbledon, and 2024 US Open are not included. This significantly impacts the rankings of players like Carlos Alcaraz and Jannik Sinner.
+The match and rank data is courtesy of [Jeff Sackmann's Github](https://github.com/JeffSackmann/tennis_atp) and [ultimate tennis statistics](https://www.ultimatetennisstatistics.com). The data is updated through the 2024 US Open.
 
 This website has been edited, produced, and published by Caleb A. Skinner in R Quarto via GitPages.
 

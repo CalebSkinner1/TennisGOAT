@@ -43,7 +43,7 @@ active <- players %>%
     Defeats = sum(points < 0),
     `Win Percent` = scales::percent(Victories/(Victories + Defeats), accuracy = .01)) %>%
   ungroup() %>%
-  filter(last_tournament > ymd(20230101), name != "Andy Murray", name != "Rafael Nadal") %>%
+  filter(last_tournament > ymd(20240101), name != "Rafael Nadal", name != "Andy Murray", name != "Dominic Thiem") %>%
   rename(
     Country = ioc,
     Player = name) %>%
@@ -63,8 +63,8 @@ active %>%
   align(align = "center", part = "all") %>%
   width(j = 12, width = 1) %>%
   width(j = 2, width = 2.5) %>%
-  width(j = 4, width = 2.1) %>%
-  width(j = c(1,4,8:11), width = .6) %>%
+  width(j = 4, width = 1.4) %>%
+  width(j = c(1,8:11), width = .5) %>%
   colformat_double(j = c(3,5:9), digits = 0) %>%
   colformat_double(j = 3,
     big.mark = "", digits = 0, na_str = "N/A")
