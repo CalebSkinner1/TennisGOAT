@@ -2,7 +2,7 @@
 title: "Wimbledon"
 ---
 
-Rankings, timeline, and frequent matchups at Wimbledon. Wimbledon is a grass court tournament held in June near London, England.
+Rankings, timeline, and frequent matchups at Wimbledon. Wimbledon is a grass court tournament held in June and July near London, England.
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(
