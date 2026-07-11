@@ -108,9 +108,6 @@ rankings %>% filter(date %in% last_issue, rank < 51) %>%
   ggplot() +
   geom_line(aes(x = year, y = average_age), color = "cadetblue4") +
   labs(x = "Year", y = "Age")
-
-
-
 ```
 
 

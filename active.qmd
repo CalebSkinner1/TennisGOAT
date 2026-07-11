@@ -19,8 +19,8 @@ library("here")
 library("flextable")
 library("plotly")
 
-matches <- read_csv(here("data/gs_matches.csv"))
-players <- read_csv(here("data/gs_players.csv"))
+matches <- read_csv(here("data/gs_matches.csv"), show_col_types = FALSE)
+players <- read_csv(here("data/gs_players.csv"), show_col_types = FALSE)
 
 set_flextable_defaults(
   font.size = 10, theme_fun = theme_zebra,
@@ -43,7 +43,7 @@ active <- players %>%
     Defeats = sum(points < 0),
     `Win Percent` = scales::percent(Victories/(Victories + Defeats), accuracy = .01)) %>%
   ungroup() %>%
-  filter(last_tournament > ymd(20240101), name != "Rafael Nadal", name != "Andy Murray", name != "Dominic Thiem") %>%
+  filter(last_tournament > ymd(20260101)) %>%
   rename(
     Country = ioc,
     Player = name) %>%
