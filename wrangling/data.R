@@ -55,7 +55,9 @@ pre_tml_matches_raw <- read_csv(tml_matches, id = "path", show_col_types = FALSE
   relocate(tourney_id, .after = score) |>
   mutate(
     winner_name = normalize_name(winner_name),
-    loser_name  = normalize_name(loser_name))
+    loser_name  = normalize_name(loser_name),
+    loser_seed = as.numeric(if_else(loser_seed == "Q", NA, loser_seed))
+  )
 
 message("Loaded ", nrow(sach_pre_matches), " Grand Slam matches from Sackmann and ",
         nrow(pre_tml_matches_raw), " from TML.")
